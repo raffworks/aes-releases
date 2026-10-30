@@ -1,0 +1,58 @@
+name: Publish AES v12.8 verified desktop release
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/publish-aes-v12-8.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout release documentation
+        uses: actions/checkout@v4
+      - name: Fetch verified Windows build artifact
+        shell: bash
+        env:
+          ARTIFACT_URL: "https://sdmntprkoreacentral.oaiusercontent.com/files/00000000-d73c-8206-a0eb-49dc6411e73a/raw?se=2026-10-30T16%3A29%3A34Z&sp=r&sv=2026-02-06&sr=b&scid=ec0fcac0-505a-5712-a0e0-ed827495cdfb&skoid=3e273c3d-5ea1-4088-9e18-79685531b184&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-10-29T23%3A23%3A41Z&ske=2026-10-30T23%3A23%3A41Z&sks=b&skv=2026-02-06&sig=3XEWjtXftRBgqnN/PO6X%2B22KV7S11wnCui0JTh8lgkE%3D"
+        run: |
+          curl -fLsS --retry 3 --retry-delay 1 --max-time 120 "$ARTIFACT_URL" -o aes_artifact.zip
+          unzip -q aes_artifact.zip -d extracted
+          test -f extracted/AutomatedEmailSender.exe
+          test -f extracted/SHA256SUMS.txt
+      - name: Verify exact v12.8 build SHA256 and size before publishing
+        shell: bash
+        run: |
+          cd extracted
+          echo "7e77aea0106f4a721b2b01c7558297beef83b226a8c3658ea8877e90a6700839  AutomatedEmailSender.exe" | sha256sum --check --status
+          sha256sum --check SHA256SUMS.txt
+          test "$(stat -c%s AutomatedEmailSender.exe)" -eq 48641770
+          test "$(head -c2 AutomatedEmailSender.exe)" = "MZ"
+          echo "Verified v12.8 executable (48,641,770 bytes)"
+      - name: Prepare release notes for v12.8 only
+        shell: bash
+        run: |
+          awk '/^## v12\.8 / {emit=1} /^## v12\.7 / {emit=0} emit {print}' CHANGELOG.md > release_notes.md
+          test -s release_notes.md
+      - name: Publish public GitHub Release v12.8 (latest)
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view v12.8 --repo "${{ github.repository }}" >/dev/null 2>&1; then
+            echo "Release v12.8 already exists; refusing to overwrite it"
+            exit 1
+          fi
+          gh release create v12.8 \
+            extracted/AutomatedEmailSender.exe \
+            extracted/SHA256SUMS.txt \
+            --repo "${{ github.repository }}" \
+            --target main \
+            --title "AES v12.8 — Stabilization Update" \
+            --notes-file release_notes.md \
+            --latest
