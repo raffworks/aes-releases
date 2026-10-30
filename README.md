@@ -1,4 +1,4 @@
-# Automated Email Sender (AES) — Desktop Releases
+# Automated Email Sender (AES) - Desktop Releases
 
 Official Windows desktop executable releases for AES by RaffWorks.
 
