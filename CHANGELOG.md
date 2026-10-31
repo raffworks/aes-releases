@@ -1,5 +1,17 @@
 # AES Desktop Changelog
 
+## v13.0 — Desktop Reliability (1 November 2026)
+
+- Protects saved SMTP credentials using Windows DPAPI with migration from older AES configurations.
+- Adds a local SQLite batch journal and Resume Pending Batch. Previously accepted rows are not automatically resent; uncertain submissions require review.
+- Introduces connection and SMTP login Diagnostics with immediate progress feedback and privacy-safe reports.
+- Separates License and About information, improves transient SMTP retries and updater rollback safeguards.
+- Windows EXE metadata now lists RaffWorks Digital Services.
+- Keeps scheduled sending behavior unchanged (no persistent scheduling).
+- Windows x64 portable EXE, unsigned. SHA-256: `ce0598dc06da0e921f89b5d0defbe1a634c92c69691bc39399e94da7acdd6f50`.
+- Windows build checks passed; automated tests do not replace real Windows SMTP and batch-resume testing.
+
+
 ## v12.8 — Stabilization Update (31 October 2026)
 
 ### Reliability
