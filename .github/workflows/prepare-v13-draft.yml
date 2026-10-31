@@ -1,0 +1,45 @@
+name: Prepare AES v13.0 Release Draft
+on:
+  push:
+    paths:
+      - .github/workflows/prepare-v13-draft.yml
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create draft (never auto-publish without verified EXE)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if gh release view v13.0 --repo "${GITHUB_REPOSITORY}" >/dev/null 2>&1; then
+            echo "v13.0 already exists; leaving it unchanged."
+            exit 0
+          fi
+          cat > "${RUNNER_TEMP}/release-notes.txt" <<'EOF'
+          ## AES v13.0 — Desktop Reliability
+
+          ### Improvements
+          - Windows DPAPI encryption for locally stored SMTP credentials, with migration from older settings.
+          - SQLite send journal with Resume Pending Batch, previously sent rows skipped and uncertain submissions flagged for manual review.
+          - Diagnostics now checks AES service, current-device license and SMTP login without sending emails; hides backend URL and customer-specific information from exported reports.
+          - Immediate progress feedback for Diagnostics checks.
+          - Clear License versus About information, SMTP transient-error handling, safer update rollback and Windows Properties metadata for RaffWorks Digital Services.
+          - Existing scheduled sending behavior remains unchanged.
+
+          ### Before publishing
+          Upload *both* validated assets from the official AES v13.0 Windows build:
+          - `AutomatedEmailSender.exe`
+          - `SHA256SUMS.txt`
+
+          SHA-256: `ce0598dc06da0e921f89b5d0defbe1a634c92c69691bc39399e94da7acdd6f50`
+
+          Tested on Windows CI: 19 automated checks and EXE metadata verification passed. Existing licensed-device Diagnostics was tested by the owner. Full live SMTP delivery, batch resume, credential migration and auto-update across every Windows environment were not verified end to end.
+
+          This binary is unsigned. A Microsoft SmartScreen warning may still appear. Keep the existing v12.9 backup until upgrading is confirmed.
+          EOF
+          gh release create v13.0 --repo "${GITHUB_REPOSITORY}" --target main --draft --title "AES v13.0 - Desktop Reliability" --notes-file "${RUNNER_TEMP}/release-notes.txt"
+          echo "Draft created. Do NOT publish before uploading and verifying both assets."
