@@ -1,0 +1,41 @@
+name: Promote AES v12.9 to Stable Release
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/promote-aes-v12-9-stable.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Verify existing release assets and checksum
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh release download v12.9 -R raffworks/aes-releases -p 'AutomatedEmailSender.exe' -p 'SHA256SUMS.txt' -D /tmp/aes129
+          cd /tmp/aes129
+          sha256sum --check SHA256SUMS.txt
+          actual="$(sha256sum AutomatedEmailSender.exe | awk '{print $1}')"
+          test "$actual" = "94612841d7ef49342a33a5e3bda3bc677427c276d029df08780ec2c79024ab28"
+          test "$(stat -c %s AutomatedEmailSender.exe)" = "48641619"
+          printf 'AES v12.9 verified: %s\n' "$actual"
+      - name: Promote v12.9 prerelease to latest stable
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh release edit v12.9 -R raffworks/aes-releases --prerelease=false --latest
+      - name: Verify latest stable release
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(gh release view v12.9 -R raffworks/aes-releases --json isPrerelease --jq '.isPrerelease')" = "false"
+          test "$(gh release view -R raffworks/aes-releases --json tagName --jq '.tagName')" = "v12.9"
+          echo "AES v12.9 now latest stable release."
