@@ -6,7 +6,7 @@ Official Windows desktop executable releases for AES by RaffWorks.
 - [Download latest AutomatedEmailSender.exe](https://github.com/raffworks/aes-releases/releases/latest/download/AutomatedEmailSender.exe)
 - [Changelog](CHANGELOG.md)
 
-**Current release target:** AES v12.8 (Windows x64).
+**Current release:** See the latest GitHub Release above (Windows x64).
 
 The executable is distributed through GitHub Releases. Keep your existing AES license and settings; AES stores its local configuration under `%APPDATA%\AES`.
 
