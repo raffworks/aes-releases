@@ -1,5 +1,13 @@
 # AES Desktop Changelog
 
+## v13.0.1 — SMTP Timeout Reliability (17 November 2026)
+
+- Increased desktop SMTP socket timeout from 30 to 60 seconds to tolerate slower connections.
+- Kept existing SMTP retry, uncertain-delivery handling, and provider limits unchanged; this patch does not guarantee delivery.
+- Windows x64 portable EXE, unsigned. SHA-256: `53b477201b6ed69478a52dad69507b8b2b2683edbffef7209782c6f56f7b3bf4`.
+- Windows build, source checks, EXE metadata, checksum, and published asset integrity verified. Live Gmail sending was not tested.
+- Source commit: `raffworks/AES@abc989ddfa0a19ec4a4290ab72ff253fd047b8e9`.
+
 ## v13.0 — Desktop Reliability (1 November 2026)
 
 - Protects saved SMTP credentials using Windows DPAPI with migration from older AES configurations.
